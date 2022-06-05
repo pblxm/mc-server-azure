@@ -38,6 +38,13 @@ resource "azurerm_storage_account" "mcserver2" {
     resource_group_name      = azurerm_resource_group.mcserver2.name
 }
 
+resource "azurerm_public_ip" "public_ip" {
+  name                = "ip-mcserver002"
+  resource_group_name = azurerm_resource_group.mcserver2.name
+  location            = azurerm_resource_group.mcserver2.location
+  allocation_method   = "Dynamic"
+}
+
 resource "azurerm_network_interface" "mcserver2" {
   name                = "nic-mcserver002"
   location            = azurerm_resource_group.mcserver2.location
@@ -48,6 +55,7 @@ resource "azurerm_network_interface" "mcserver2" {
     subnet_id                     = azurerm_subnet.public-mcserver2.id
     private_ip_address_allocation = "Static"
     private_ip_address            = "10.0.1.10"
+    public_ip_address_id          = azurerm_public_ip.public_ip.id
   }
 }
 
@@ -63,7 +71,9 @@ resource "azurerm_linux_virtual_machine" "mcserver2" {
     location               = azurerm_resource_group.mcserver2.location
     resource_group_name    = azurerm_resource_group.mcserver2.name
     network_interface_ids  = [azurerm_network_interface.mcserver2.id]
-    size                   = "Standard_DS1_v2"
+    size                   = "Standard_B2s"
+
+    
     admin_username         = "pbl"
     computer_name          = "mcserver"  
 
