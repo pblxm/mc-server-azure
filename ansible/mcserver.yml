@@ -1,0 +1,55 @@
+---
+- hosts: nodes
+  become: yes
+  vars_files: ./vars/docker/docker.yml
+  tasks:
+  - name: Set timezone to Madrid
+    community.general.timezone:
+      name: Europe/Madrid
+
+  - name: Update packages
+    apt:
+      update_cache: yes
+
+  - name: Install required packages for docker
+    apt:
+      name: "{{ packages }}"
+      state: latest
+
+  - name: Add official docker gpg key
+    apt_key:
+      url: https://download.docker.com/linux/ubuntu/gpg
+      state: present
+
+  - name: Add docker official repo for Ubuntu 20.04 (focal)
+    apt_repository:
+      repo: deb [arch=amd64] https://download.docker.com/linux/ubuntu focal stable
+      state: present
+
+  - name: Update packages
+    apt:
+      update_cache: yes
+
+  - name: Install docker
+    apt:
+      name: docker-ce
+      state: latest
+
+  - name: Install docker compose
+    get_url:
+      url: https://github.com/docker/compose/releases/download/v2.2.3/docker-compose-linux-x86_64
+      dest: /usr/local/bin/docker-compose
+      mode: 'u+x,g+x'
+
+  - name: Install pip
+    apt:
+      name: python3-pip
+      state: latest
+
+  - name: Install Docker module for Python
+    pip:
+      name: docker
+
+  - name: Deploy the docker compose
+    docker_compose:
+      project_src: ./compose

@@ -1,0 +1,81 @@
+version: '3'
+services:
+  mc:
+    image: itzg/minecraft-server
+    ports:
+      - "25565:25565"
+    volumes:
+      - ${HOME}/mcserver-data/:/data/
+    environment:
+      MEMORY: 2G
+      EULA: "TRUE"
+      SERVER_NAME: "Server"
+      MOTD: "Welcome"
+      VERSION: "1.18.1"
+      ONLINE_MODE: "false"
+      VIEW_DISTANCE: 10
+      SPAWN_NPCS: "true"
+      SPAWN_MONSTERS: "true"
+      SPAWN_ANIMALS: "true"
+      GENERATE_STRUCTURES: "true"
+      ANNOUNCE_PLAYER_ACHIEVEMENTS: "true"
+    tty: true
+    stdin_open: true
+    restart: unless-stopped
+
+  monitor:
+    image: itzg/mc-monitor
+    command: export-for-prometheus
+    environment:
+      EXPORT_SERVERS: mc
+      DEBUG: "true"
+    depends_on:
+      - mc
+    restart: unless-stopped
+
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor
+    ports:
+      - "8180:8080"
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:rw
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+    restart: unless-stopped
+
+  prometheus:
+    image: prom/prometheus
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus-tsdb:/prometheus
+    depends_on:
+      - monitor
+    restart: unless-stopped
+
+  grafana:
+    image: grafana/grafana-oss:${GRAFANA_VERSION:-8.3.3}
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana-lib:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning
+      - ./dashboards:/etc/grafana/dashboards
+      - ./certs:/etc/ssl:ro
+    depends_on:
+      - prometheus
+    restart: unless-stopped
+
+  duckdns:
+    image: lscr.io/linuxserver/duckdns
+    environment:
+      - TZ="Europe/Madrid"
+      - SUBDOMAINS="pblserver"
+      - TOKEN="4798d542-884c-41d9-a34b-7637e68f8a14"
+      - LOG_FILE=false
+    restart: unless-stopped
+
+volumes:
+  mc-data: {}
+  prometheus-tsdb: {}
+  grafana-lib: {}
