@@ -4,8 +4,14 @@
 terraform="./terraform"
 ansible="./ansible"
 
-# Name of the SSH key we want to use to connect to the server
+# Generate certificate and private key for Grafana
+certs="./$ansible/compose/certs/"
+
+test -d $certs || ( mkdir $certs && openssl req -x509 -sha256 -nodes -days 365 -newkey rsa:2048 -keyout "$certs/mcserver.key" -out "$certs/mcserver.crt")
+
+# Generate SSH key we will to use to connect to the server
 keyName="mykey"
+test -d "$HOME/.ssh/$keyName" || ssh-keygen -t rsa -f "$HOME/.ssh/$keyName" -q -P ""
 
 # Create enviroment file for the docker compose
 echo "HOME=$HOME" > $ansible/.env
@@ -17,7 +23,7 @@ chmod 744 -R .
 # Initialize terraform project
 cd $terraform || exit; terraform init -upgrade &>/dev/null
 
-# Select
+# Selection
 read -r -p "Choose plan (1), apply (2) or destroy (3) = " choice
 
 if [[ $choice == 1 ]]; then
