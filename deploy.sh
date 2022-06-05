@@ -7,11 +7,13 @@ ansible="./ansible"
 # Generate certificate and private key for Grafana
 certs="./$ansible/compose/certs/"
 
-test -d $certs || ( mkdir $certs && openssl req -x509 -sha256 -nodes -days 365 -newkey rsa:2048 -keyout "$certs/mcserver.key" -out "$certs/mcserver.crt")
+test -d $certs || ( mkdir $certs && openssl req -x509 -sha256 -nodes -days 365 \
+					-newkey rsa:2048 -keyout "$certs/mcserver.key" -out "$certs/mcserver.crt" \
+					-subj "/C=ES/O=Mc/OU=Mc/CN=myserver.com" )
 
 # Generate SSH key we will to use to connect to the server
 keyName="mykey"
-test -d "$HOME/.ssh/$keyName" || ssh-keygen -t rsa -f "$HOME/.ssh/$keyName" -q -P ""
+test -f "$HOME/.ssh/$keyName" || ssh-keygen -t rsa -f "$HOME/.ssh/$keyName" -q -P ""
 
 # Create enviroment file for the docker compose
 echo "HOME=$HOME" > $ansible/.env
