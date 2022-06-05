@@ -1,7 +1,7 @@
 ---
 - hosts: nodes
   become: yes
-  vars_files: ./vars/docker/docker.yml
+  vars_files: ./vars/docker.yml
   tasks:
   - name: Set timezone to Madrid
     community.general.timezone:

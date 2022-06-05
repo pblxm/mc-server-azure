@@ -31,7 +31,7 @@ resource "azurerm_subnet" "public-mcserver" {
 }
 
 resource "azurerm_storage_account" "mcserver" {
-    name                     = "samcserver01"
+    name                     = "staccmcserver01"
     account_tier             = "Standard"
     account_replication_type = "LRS"
     location                 = azurerm_resource_group.mcserver.location

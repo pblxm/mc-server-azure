@@ -34,8 +34,6 @@ elif [[ $choice == 2 ]]; then
 	# Deploy Terraform
 	terraform apply
 
-	terraform output -raw server_ip > ip.txt
-
 	# Create hosts file
 	echo "[nodes]" > "$ansible/hosts"
 
@@ -43,8 +41,7 @@ elif [[ $choice == 2 ]]; then
 	terraform output -raw server_ip | tr '\n' ' ' >> "$ansible/hosts"
 
 	# Configuration arguments
-	echo -n " ansible_user=pbl ansible_connection=ssh ansible_private_key_file=$HOME/.ssh/$keyName\ 
-	ansible_ssh_extra_args='-o StrictHostKeyChecking=no'" >> "$ansible/hosts"
+	echo -n " ansible_user=pbl ansible_connection=ssh ansible_private_key_file=$HOME/.ssh/$keyName ansible_ssh_extra_args='-o StrictHostKeyChecking=no'" >> "$ansible/hosts"
 
 	# Run Ansible playbook
 	cd "$ansible" || exit; ansible-playbook mcserver.yml
