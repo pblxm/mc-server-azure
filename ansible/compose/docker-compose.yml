@@ -5,16 +5,20 @@ services:
     ports:
       - "25565:25565"
     volumes:
-      - ${HOME}/mcserver-data/:/data/
+      - /home/pbl/mcserver-data/:/data/
     environment:
-      MEMORY: 2G
+      MEMORY: 2300M
+      TYPE: "PAPER"
       EULA: "TRUE"
-      SERVER_NAME: "Server"
-      MOTD: "Welcome"
-      VERSION: "1.18.1"
+      SERVER_NAME: "server"
+      MOTD: "Welcome to my Dockerized Minecraft Server"
+      VERSION: "1.18.2"
       ONLINE_MODE: "false"
-      VIEW_DISTANCE: 10
+      VIEW_DISTANCE: 20
       SPAWN_NPCS: "true"
+      ENABLE_QUERY: "true"
+      # OPS: "<User to give OP>"
+      DIFFICULTY: "normal"
       SPAWN_MONSTERS: "true"
       SPAWN_ANIMALS: "true"
       GENERATE_STRUCTURES: "true"
@@ -70,8 +74,8 @@ services:
     image: lscr.io/linuxserver/duckdns
     environment:
       - TZ="Europe/Madrid"
-      - SUBDOMAINS="pblserver"
-      - TOKEN="4798d542-884c-41d9-a34b-7637e68f8a14"
+      - SUBDOMAINS="<UR_SUBDOMAIN>"
+      - TOKEN="<UR_TOKEN>"
       - LOG_FILE=false
     restart: unless-stopped
 

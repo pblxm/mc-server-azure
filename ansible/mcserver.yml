@@ -11,17 +11,17 @@
     apt:
       update_cache: yes
 
-  - name: Install required packages for docker
+  - name: Install required packages for Docker
     apt:
       name: "{{ packages }}"
       state: latest
 
-  - name: Add official docker gpg key
+  - name: Add Docker gpg key
     apt_key:
       url: https://download.docker.com/linux/ubuntu/gpg
       state: present
 
-  - name: Add docker official repo for Ubuntu 20.04 (focal)
+  - name: Add Docker official repo for Ubuntu 20.04 (focal)
     apt_repository:
       repo: deb [arch=amd64] https://download.docker.com/linux/ubuntu focal stable
       state: present
@@ -30,26 +30,26 @@
     apt:
       update_cache: yes
 
-  - name: Install docker
+  - name: Install Docker
     apt:
       name: docker-ce
       state: latest
 
-  - name: Install docker compose
-    get_url:
-      url: https://github.com/docker/compose/releases/download/v2.2.3/docker-compose-linux-x86_64
-      dest: /usr/local/bin/docker-compose
-      mode: 'u+x,g+x'
-
-  - name: Install pip
+  - name: Install Docker compose
     apt:
-      name: python3-pip
+      name: docker-compose
       state: latest
 
-  - name: Install Docker module for Python
-    pip:
-      name: docker
+  - name: Create directory for Docker compose
+    file:
+      path: "/home/pbl/compose"
+      state: directory
 
-  - name: Deploy the docker compose
+  - name: Copy compose folder to host
+    copy:
+      src: "./compose"
+      dest: "/home/pbl"
+
+  - name: Deploy the Docker compose
     docker_compose:
-      project_src: ./compose
+      project_src: "/home/pbl/compose"

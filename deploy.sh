@@ -11,6 +11,9 @@ test -d "$certs" || ( mkdir $certs && openssl req -x509 -sha256 -nodes -days 365
 					-newkey rsa:2048 -keyout "$certs/mcserver.key" -out "$certs/mcserver.crt" \
 					-subj "/C=ES/O=Mc/OU=Mc/CN=myserver.com" )
 
+# Create Ansible logs folder
+test -d "$ansible/logs" || mkdir "$ansible/logs"
+
 # Generate SSH key we will to use to connect to the server
 keyName="mykey"
 test -f "$HOME/.ssh/$keyName" || ssh-keygen -t rsa -f "$HOME/.ssh/$keyName" -q -P ""
@@ -42,6 +45,9 @@ elif [[ $choice == 2 ]]; then
 
 	# Configuration arguments
 	echo -n " ansible_user=pbl ansible_connection=ssh ansible_private_key_file=$HOME/.ssh/$keyName ansible_ssh_extra_args='-o StrictHostKeyChecking=no'" >> "$ansible/hosts"
+
+	# Wait for server to be accessible via SSH
+	until ssh -l "pbl" -i "$HOME/.ssh/$keyName" "$(terraform output -raw server_ip)" "exit" &> /dev/null; do sleep 3; done
 
 	# Run Ansible playbook
 	cd "$ansible" || exit; ansible-playbook mcserver.yml
