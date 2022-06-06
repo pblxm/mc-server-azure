@@ -47,7 +47,7 @@ elif [[ $choice == 2 ]]; then
 	echo -n " ansible_user=pbl ansible_connection=ssh ansible_private_key_file=$HOME/.ssh/$keyName ansible_ssh_extra_args='-o StrictHostKeyChecking=no'" >> "$ansible/hosts"
 
 	# Wait for server to be accessible via SSH
-	until ssh -l "pbl" -i "$HOME/.ssh/$keyName" "$(terraform output -raw server_ip)" "exit" &> /dev/null; do sleep 3; done
+	until ssh -l "pbl"  -o StrictHostKeyChecking=no -i "$HOME/.ssh/$keyName" "$(terraform output -raw server_ip)" "exit" &> /dev/null; do sleep 3; done
 
 	# Run Ansible playbook
 	cd "$ansible" || exit; ansible-playbook mcserver.yml
