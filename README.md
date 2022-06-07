@@ -17,6 +17,8 @@ Execute `deploy.sh` script
 ## Optional
 Set your DuckDNS subdomain token inside `./ansible/docker/compose/docker-compose.yml`
 
-Install Terraform, Ansible, Docker and Azure CLI with `install.sh` script
+Install Terraform, Ansible, Docker and Azure CLI with `install.sh`
 
 Azure CLI login with: `read -sp "Azure password: " AZ_PASS && az login -u <ACCOUNT> -p $AZ_PASS`
+
+Change name for the key or admin user inside `install.sh` 
