@@ -22,6 +22,7 @@
       state: present
 
   - name: Add Docker official repo for Ubuntu 20.04 (focal)
+    become: yes
     apt_repository:
       repo: deb [arch=amd64] https://download.docker.com/linux/ubuntu focal stable
       state: present
@@ -35,21 +36,33 @@
       name: docker-ce
       state: latest
 
+  - name: Add user to docker group
+    user:
+      name: "{{ ansible_env.SUDO_USER }}"
+      groups: docker
+      append: yes
+
+  - name: Reset connection to apply group permissions
+    meta: reset_connection
+
   - name: Install Docker compose
     apt:
       name: docker-compose
       state: latest
 
   - name: Create directory for Docker compose
+    become: no
     file:
-      path: "/home/pbl/compose"
+      path: "{{ ansible_env.PWD }}/compose"
       state: directory
 
   - name: Copy compose folder to host
+    become: no
     copy:
       src: "./compose"
-      dest: "/home/pbl"
+      dest: "{{ ansible_env.PWD }}"
 
   - name: Deploy the Docker compose
+    become: no
     docker_compose:
-      project_src: "/home/pbl/compose"
+      project_src: "{{ ansible_env.PWD }}/compose"

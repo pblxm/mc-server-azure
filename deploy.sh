@@ -1,5 +1,12 @@
 #!/bin/bash
 
+# Set admin username
+adminUser="pbl"
+
+# Generate SSH key we will to use to connect to the server
+keyName="mykey"
+test -f "$HOME/.ssh/$keyName" || ssh-keygen -t rsa -f "$HOME/.ssh/$keyName" -q -P ""
+
 # Set paths to Terraform and Ansible directories
 terraform="$PWD/terraform"
 ansible="$PWD/ansible"
@@ -7,16 +14,12 @@ ansible="$PWD/ansible"
 # Generate certificate and private key for Grafana
 certs="$ansible/compose/certs/"
 
-test -d "$certs" || ( mkdir $certs && openssl req -x509 -sha256 -nodes -days 365 \
+test -d "$certs" || ( mkdir "$certs" && openssl req -x509 -sha256 -nodes -days 365 \
 					-newkey rsa:2048 -keyout "$certs/mcserver.key" -out "$certs/mcserver.crt" \
 					-subj "/C=ES/O=Mc/OU=Mc/CN=myserver.com" )
 
 # Create Ansible logs folder
 test -d "$ansible/logs" || mkdir "$ansible/logs"
-
-# Generate SSH key we will to use to connect to the server
-keyName="mykey"
-test -f "$HOME/.ssh/$keyName" || ssh-keygen -t rsa -f "$HOME/.ssh/$keyName" -q -P ""
 
 # Create enviroment file for the docker compose
 echo "HOME=$HOME" > "$ansible/.env"
@@ -35,7 +38,7 @@ if [[ $choice == 1 ]]; then
 	terraform plan
 elif [[ $choice == 2 ]]; then
 	# Deploy Terraform
-	terraform apply
+	terraform apply -auto-approve -var "admin=$adminUser"
 
 	# Create hosts file
 	echo "[nodes]" > "$ansible/hosts"
@@ -44,10 +47,10 @@ elif [[ $choice == 2 ]]; then
 	terraform output -raw server_ip | tr '\n' ' ' >> "$ansible/hosts"
 
 	# Configuration arguments
-	echo -n " ansible_user=pbl ansible_connection=ssh ansible_private_key_file=$HOME/.ssh/$keyName ansible_ssh_extra_args='-o StrictHostKeyChecking=no'" >> "$ansible/hosts"
+	echo -n " ansible_user=$adminUser ansible_connection=ssh ansible_private_key_file=$HOME/.ssh/$keyName ansible_ssh_extra_args='-o StrictHostKeyChecking=no'" >> "$ansible/hosts"
 
-	# Wait for server to be accessible via SSH
-	until ssh -l "pbl"  -o StrictHostKeyChecking=no -i "$HOME/.ssh/$keyName" "$(terraform output -raw server_ip)" "exit" &> /dev/null; do sleep 3; done
+	# Wait for server to be accessible with SSH
+	until ssh -l "$adminUser"  -o StrictHostKeyChecking=no -i "$HOME/.ssh/$keyName" "$(terraform output -raw server_ip)" "exit" &> /dev/null; do sleep 3; done
 
 	# Run Ansible playbook
 	cd "$ansible" || exit; ansible-playbook mcserver.yml

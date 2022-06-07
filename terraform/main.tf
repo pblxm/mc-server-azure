@@ -8,7 +8,27 @@ terraform {
 }
 
 provider "azurerm" {
-    features {}
+  features {}
+}
+
+variable "vm_size" {
+  type        = string
+  description = "VM size for the instance"
+  default = "Standard_B2s"
+}
+
+variable "key_name" {
+  type        = string
+  description = "Name of the public key to connect to the instance"
+  default = "mykey"
+}
+
+variable "admin" {
+  type        = string
+  description = "Name for the admin user"
+
+  # Value set in deploy script
+  default = "pbl" 
 }
 
 resource "azurerm_resource_group" "mcserver" {
@@ -60,10 +80,10 @@ resource "azurerm_network_interface" "mcserver" {
 }
 
 resource "azurerm_ssh_public_key" "mcserver" {
-  name                = "mykey"
+  name                = var.key_name
   resource_group_name = azurerm_resource_group.mcserver.name
   location            = azurerm_resource_group.mcserver.location
-  public_key          = file("~/.ssh/mykey.pub")
+  public_key          = file("~/.ssh/${var.key_name}.pub")
 }
 
 resource "azurerm_linux_virtual_machine" "mcserver" {
@@ -71,8 +91,8 @@ resource "azurerm_linux_virtual_machine" "mcserver" {
     location               = azurerm_resource_group.mcserver.location
     resource_group_name    = azurerm_resource_group.mcserver.name
     network_interface_ids  = [azurerm_network_interface.mcserver.id]
-    size                   = "Standard_B2s"
-    admin_username         = "pbl"
+    size                   = var.vm_size
+    admin_username         = var.admin
     computer_name          = "mcserver"  
 
     source_image_reference {
@@ -89,7 +109,7 @@ resource "azurerm_linux_virtual_machine" "mcserver" {
     }
 
     admin_ssh_key {
-      username = "pbl"
+      username = var.admin
       public_key = azurerm_ssh_public_key.mcserver.public_key
     }
     disable_password_authentication = true

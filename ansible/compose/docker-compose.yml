@@ -5,7 +5,7 @@ services:
     ports:
       - "25565:25565"
     volumes:
-      - /home/pbl/mcserver-data/:/data/
+      - ~/mcserver-data/:/data/
     environment:
       MEMORY: 2300M
       TYPE: "PAPER"
