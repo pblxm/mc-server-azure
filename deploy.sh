@@ -16,7 +16,7 @@ certs="$ansible/compose/certs/"
 
 test -d "$certs" || ( mkdir "$certs" && openssl req -x509 -sha256 -nodes -days 365 \
 					-newkey rsa:2048 -keyout "$certs/mcserver.key" -out "$certs/mcserver.crt" \
-					-subj "/C=ES/O=Mc/OU=Mc/CN=myserver.com" )
+					-subj "/C=ES/O=Mc/OU=Mc/CN=myserver.com" )  &>/dev/null
 
 # Create Ansible logs folder
 test -d "$ansible/logs" || mkdir "$ansible/logs"
