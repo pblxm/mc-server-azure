@@ -43,11 +43,70 @@ resource "azurerm_virtual_network" "mcserver" {
     location              = azurerm_resource_group.mcserver.location
 }
 
+resource "azurerm_network_security_group" "mcserver" {
+  name                = "mcserver-nsg"
+  location            = azurerm_resource_group.mcserver.location
+  resource_group_name = azurerm_resource_group.mcserver.name
+}
+
+resource "azurerm_application_security_group" "mcserver" {
+  name                 = "mcserver-asg"
+  location             = azurerm_resource_group.mcserver.location
+  resource_group_name  = azurerm_resource_group.mcserver.name
+}
+
+resource "azurerm_network_security_rule" "mcserver_endpoint" {
+  name                        = "mcserver-endpoint"
+  priority                    = 100
+  direction                   = "Inbound"
+  access                      = "Allow"
+  protocol                    = "Tcp"
+  source_port_range           = "*"
+  destination_port_range      = "25565"
+  source_address_prefix       = "*"
+  destination_address_prefix  = "*"
+  resource_group_name         = azurerm_resource_group.mcserver.name
+  network_security_group_name = azurerm_network_security_group.mcserver.name
+}
+
+resource "azurerm_network_security_rule" "mcserver_ssh" {
+  name                        = "mcserver-ssh"
+  priority                    = 101
+  direction                   = "Inbound"
+  access                      = "Allow"
+  protocol                    = "Tcp"
+  source_port_range           = "*"
+  destination_port_range      = "22"
+  source_address_prefix       = "*"
+  destination_address_prefix  = "*"
+  resource_group_name         = azurerm_resource_group.mcserver.name
+  network_security_group_name = azurerm_network_security_group.mcserver.name
+}
+
+resource "azurerm_network_security_rule" "mcserver_grafana" {
+  name                        = "mcserver-grafana"
+  priority                    = 102
+  direction                   = "Inbound"
+  access                      = "Allow"
+  protocol                    = "Tcp"
+  source_port_range           = "*"
+  destination_port_range      = "3000"
+  source_address_prefix       = "*"
+  destination_address_prefix  = "*"
+  resource_group_name         = azurerm_resource_group.mcserver.name
+  network_security_group_name = azurerm_network_security_group.mcserver.name
+}
+
 resource "azurerm_subnet" "public-mcserver" {
     name                 = "public-subnet-01"
     resource_group_name  = azurerm_resource_group.mcserver.name
     virtual_network_name = azurerm_virtual_network.mcserver.name
     address_prefixes     = ["10.0.1.0/24"]
+}
+
+resource "azurerm_subnet_network_security_group_association" "mcserver" {
+  subnet_id                 = azurerm_subnet.public-mcserver.id
+  network_security_group_id = azurerm_network_security_group.mcserver.id
 }
 
 resource "azurerm_storage_account" "mcserver" {
@@ -77,6 +136,11 @@ resource "azurerm_network_interface" "mcserver" {
     private_ip_address            = "10.0.1.10"
     public_ip_address_id          = azurerm_public_ip.public_ip.id
   }
+}
+
+resource "azurerm_network_interface_application_security_group_association" "mcserver" {
+  network_interface_id          = azurerm_network_interface.mcserver.id
+  application_security_group_id = azurerm_application_security_group.mcserver.id
 }
 
 resource "azurerm_ssh_public_key" "mcserver" {
