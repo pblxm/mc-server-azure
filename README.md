@@ -21,4 +21,4 @@ Install Terraform, Ansible, Docker and Azure CLI with `install.sh`
 
 Azure CLI login with: `read -sp "Azure password: " AZ_PASS && az login -u <ACCOUNT> -p $AZ_PASS`
 
-Change name for the key or admin user inside `install.sh` 
+Change name for the key or admin user inside `deploy.sh` 
